@@ -1,0 +1,62 @@
+// the panel itself (p-sidebar's own overlay/drawer chrome) — widened a bit from PrimeNG's own
+// default so titles at deeper nesting levels have room before wrapping
+::ng-deep .sb-sidebar-panel {
+  width: 20rem;
+}
+
+.sb-sidebar-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--p-text-muted-color);
+}
+
+.sb-sidebar-tree {
+  display: flex;
+  flex-direction: column;
+}
+
+.sb-sidebar-group {
+  display: flex;
+  flex-direction: column;
+}
+
+// a plain <button>, styled directly — same convention search-crudstone's own action buttons use
+// (var(--p-primary-color) etc. applied straight to a native element) rather than wrapping every
+// control in a full PrimeNG component
+.sb-sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--p-text-color);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+
+  .pi {
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.sb-sidebar-link {
+  display: block;
+  padding: 0.65rem 1rem;
+  color: var(--p-text-color);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+    color: var(--p-primary-color);
+  }
+}

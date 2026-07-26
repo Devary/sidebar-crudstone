@@ -1,0 +1,28 @@
+{
+  "name": "main",
+  "theme": "blue",
+  "nodes": [
+    {
+      "title": "Conventions Management",
+      "type": "group",
+      "entityName": null,
+      "path": null,
+      "children": [
+        {
+          "title": "Conventions",
+          "type": "link",
+          "entityName": "conventions",
+          "path": "conventions",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Studios",
+      "type": "link",
+      "entityName": "studios",
+      "path": "studios",
+      "children": []
+    }
+  ]
+}

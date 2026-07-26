@@ -1,0 +1,16 @@
+// Every PrimeNG dialog (Dialog, ConfirmDialog, DynamicDialog) shares the same
+// mask element, so one rule gives every modal in the app a frosted-glass backdrop.
+.p-dialog-mask {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.p-dialog {
+  border-radius: 16px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.p-dialog .p-dialog-header {
+  border-radius: 16px 16px 0 0;
+}
