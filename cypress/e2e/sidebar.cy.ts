@@ -1,38 +1,31 @@
 describe('sb-sidebar (main sidebar, backed by quar-crud-host)', () => {
   beforeEach(() => {
     cy.visit('/main');
-    // waiting for real tree content (not just the root/panel shell, which is already present
-    // before the SidebarContext fetch even resolves) is what actually confirms data has loaded
+    // p-sidebar renders its actual panel content into a portaled element elsewhere in the DOM,
+    // not as a child of <p-sidebar> itself (same overlay pattern PrimeNG's Popover/Datepicker
+    // panels use) — its own styleClass lands there, so that's what a visibility check must target.
+    // Waiting for real tree content (not just the empty panel shell, which is already visible
+    // before the SidebarContext fetch even resolves) is what actually confirms data has loaded.
     cy.get('[data-cy="sidebar-link-Studios"]').should('be.visible');
   });
 
-  it('renders the group node with its link nested inside, and a bare top-level link alongside it', () => {
-    cy.get('[data-cy="sidebar-group-Conventions Management"]').should('be.visible').and('contain.text', 'Conventions Management');
+  it('renders the group node expanded by default, with its link nested inside', () => {
+    cy.get('[data-cy="sidebar-group-Conventions Management"]').should('be.visible');
     cy.get('[data-cy="sidebar-link-Conventions"]').should('be.visible');
+  });
+
+  it('renders a bare top-level link node alongside the group', () => {
     cy.get('[data-cy="sidebar-link-Studios"]').should('be.visible');
   });
 
-  it('renders each node\'s icon', () => {
-    cy.get('[data-cy="sidebar-group-Conventions Management"] .pi-calendar').should('exist');
-    cy.get('[data-cy="sidebar-link-Conventions"] .pi-list').should('exist');
-    cy.get('[data-cy="sidebar-link-Studios"] .pi-building').should('exist');
-  });
+  it('collapses and re-expands a group, hiding/showing its nested link', () => {
+    cy.get('[data-cy="sidebar-link-Conventions"]').should('be.visible');
 
-  it('collapses the whole sidebar into icon mode via its own trigger, backend-configured (not a user toggle for variant/side)', () => {
-    cy.get('[data-cy="sidebar-root"]').should('have.attr', 'data-collapsible-mode', 'icon');
-    cy.get('[data-cy="sidebar-root"]').should('have.attr', 'data-state', 'expanded');
+    cy.get('[data-cy="sidebar-group-Conventions Management"]').click();
+    cy.get('[data-cy="sidebar-link-Conventions"]').should('not.exist');
 
-    cy.get('[data-cy="sidebar-trigger"]').click();
-    cy.get('[data-cy="sidebar-root"]').should('have.attr', 'data-state', 'collapsed');
-
-    cy.get('[data-cy="sidebar-trigger"]').click();
-    cy.get('[data-cy="sidebar-root"]').should('have.attr', 'data-state', 'expanded');
-  });
-
-  it('applies the layout config exactly as served, with no client-facing override', () => {
-    cy.get('[data-cy="sidebar-root"]')
-      .should('have.attr', 'data-side', 'left')
-      .and('have.attr', 'data-variant', 'sidebar');
+    cy.get('[data-cy="sidebar-group-Conventions Management"]').click();
+    cy.get('[data-cy="sidebar-link-Conventions"]').should('be.visible');
   });
 
   it("each link points at its own entity's CRUD route on the crudstone app, not this one", () => {

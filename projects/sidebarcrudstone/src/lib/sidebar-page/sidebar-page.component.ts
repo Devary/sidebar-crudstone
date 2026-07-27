@@ -1,4 +1,4 @@
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {Component} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs';
@@ -15,7 +15,6 @@ import {SidebarComponent} from '../sidebar/sidebar.component';
   selector: 'sb-sidebar-page',
   standalone: true,
   imports: [SidebarComponent],
-  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (name(); as sidebarName) {
       <sb-sidebar [name]="sidebarName"/>

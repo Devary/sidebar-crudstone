@@ -4,8 +4,6 @@
 // @CrudstoneEntity) and nests nothing further.
 export interface SidebarNode {
   title: string;
-  // a PrimeIcons class name (e.g. "pi pi-home"), or null/undefined if the node had none
-  icon?: string | null;
   type: 'group' | 'link';
   // link nodes only
   entityName?: string | null;
@@ -19,7 +17,6 @@ export interface SidebarNode {
 export function normalizeSidebarNode(raw: Partial<SidebarNode>): SidebarNode {
   return {
     title: raw.title ?? '',
-    icon: raw.icon,
     type: raw.type === 'link' ? 'link' : 'group',
     entityName: raw.entityName,
     path: raw.path,
