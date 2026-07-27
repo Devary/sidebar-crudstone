@@ -15,8 +15,24 @@
 >
   <div class="sb-panel">
     <header class="sb-header">
-      <span class="sb-brand-mark">{{ brandTitle().charAt(0) }}</span>
-      <span class="sb-brand-title sb-collapse-hidden">{{ brandTitle() }}</span>
+      @if (settingsMenu()) {
+        <button type="button" class="sb-brand-button" data-cy="sidebar-brand" (click)="toggleBrandMenu()">
+          <span class="sb-brand-mark">{{ brandTitle().charAt(0) }}</span>
+          <span class="sb-brand-title sb-collapse-hidden">{{ brandTitle() }}</span>
+          <i class="pi pi-chevron-down sb-brand-chevron sb-collapse-hidden" [class.sb-chevron-up]="brandMenuOpen()"></i>
+        </button>
+        @if (brandMenuOpen()) {
+          <div class="sb-brand-menu" data-cy="sidebar-brand-menu">
+            <button type="button" class="sb-brand-menu-item" data-cy="sidebar-brand-settings" (click)="onSettingsClick()">
+              <i class="pi pi-cog"></i>
+              <span>{{ i18n.t('settings') }}</span>
+            </button>
+          </div>
+        }
+      } @else {
+        <span class="sb-brand-mark">{{ brandTitle().charAt(0) }}</span>
+        <span class="sb-brand-title sb-collapse-hidden">{{ brandTitle() }}</span>
+      }
       @if (showTrigger() && sidebarContext()?.collapsible !== 'none') {
         <button type="button" class="sb-trigger" data-cy="sidebar-trigger" (click)="toggle()">
           <i class="pi pi-bars"></i>

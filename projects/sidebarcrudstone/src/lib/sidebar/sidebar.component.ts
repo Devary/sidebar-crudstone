@@ -1,4 +1,4 @@
-import {Component, computed, effect, Inject, input, model, signal} from '@angular/core';
+import {Component, computed, effect, ElementRef, Inject, input, model, output, signal} from '@angular/core';
 import {MessageService} from 'primeng/api';
 import {normalizeSidebarContext, SidebarContext} from '../model/SidebarContext';
 import {SidebarNode} from '../model/SidebarNode';
@@ -39,6 +39,7 @@ import {themeVars} from '../theme/theme-palettes';
     // different themes) can coexist on one page, so a document-root override would bleed one
     // instance's theme into another's
     '[style]': 'themeStyle()',
+    '(document:click)': 'onDocumentClick($event)',
   },
 })
 export class SidebarComponent {
@@ -54,6 +55,15 @@ export class SidebarComponent {
 
   /** Hide the header's own collapse trigger when the host renders its own toggle elsewhere. */
   readonly showTrigger = input(true);
+
+  /**
+   * Turn the brand (mark + name) into a dropdown whose menu holds a Settings entry — clicking it
+   * emits `settingsSelected` for the host to react to (e.g. open its own settings dialog).
+   */
+  readonly settingsMenu = input(false);
+
+  /** Fired when the brand dropdown's Settings entry is clicked. */
+  readonly settingsSelected = output<void>();
 
   /** Two-way bindable open/closed (expanded/icon-only, or shown/hidden in offcanvas) state. */
   readonly open = model(true);
@@ -75,10 +85,13 @@ export class SidebarComponent {
   // nested groups start expanded unless the node opts out via defaultOpen: false
   private readonly openSubMenus = signal<ReadonlySet<SidebarNode>>(new Set());
 
+  protected readonly brandMenuOpen = signal(false);
+
   constructor(private sidebarService: SidebarService,
               private messageService: MessageService,
               private messageTemplate: MessageTemplateService,
               protected i18n: TranslationService,
+              private elementRef: ElementRef<HTMLElement>,
               @Inject(SIDEBAR_CRUDSTONE_CONFIG) private config: SidebarCrudstoneConfig) {
     effect(() => {
       const provided = this.context();
@@ -173,5 +186,27 @@ export class SidebarComponent {
   protected brandTitle(): string {
     const name = this.sidebarContext()?.name ?? this.name() ?? '';
     return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+  }
+
+  protected toggleBrandMenu(): void {
+    // collapsed icon-rail: the anchored menu would be clipped by the panel, so the brand click
+    // expands the sidebar first — the user clicks again for the menu, now with room to render
+    if (this.state() === 'collapsed') {
+      this.open.set(true);
+      return;
+    }
+    this.brandMenuOpen.update(open => !open);
+  }
+
+  protected onSettingsClick(): void {
+    this.brandMenuOpen.set(false);
+    this.settingsSelected.emit();
+  }
+
+  /** Any click outside this component closes the brand dropdown (standard menu semantics). */
+  protected onDocumentClick(event: MouseEvent): void {
+    if (this.brandMenuOpen() && !this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.brandMenuOpen.set(false);
+    }
   }
 }

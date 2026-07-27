@@ -10,6 +10,7 @@
  */
 export interface SidebarCrudstoneTranslations {
   loading: string;
+  settings: string;
 
   sidebarNotFound: string; // {name}
   toastErrorSummary: string;
@@ -31,6 +32,7 @@ export function interpolate(text: string, params?: Record<string, string | numbe
 
 export const defaultTranslations: SidebarCrudstoneTranslations = {
   loading: 'Loading...',
+  settings: 'Settings',
 
   sidebarNotFound: 'Sidebar {name} not found',
   toastErrorSummary: 'Error',

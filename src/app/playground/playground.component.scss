@@ -1,75 +1,35 @@
 :host {
   display: block;
-  padding: 1.25rem 1.5rem;
+  min-height: 100svh;
 }
 
-.pg-caption {
-  margin: 0 0 1.25rem;
-  font-size: 1rem;
-  color: var(--p-text-color);
-}
+// ---- the sidebar, pinned to the screen edge -----------------------------------------------
+.pg-sidebar-pin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100svh;
+  z-index: 10;
 
-.pg-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1.75rem;
-  margin-bottom: 1.25rem;
-}
+  &.pg-sidebar-pin-right {
+    left: auto;
+    right: 0;
+  }
 
-.pg-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-
-  > label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--p-text-color);
+  sb-sidebar {
+    height: 100%;
   }
 }
 
-.pg-segment {
-  display: flex;
-  border-radius: 0.5rem;
-  overflow: hidden;
-
-  button {
-    border: none;
-    background: transparent;
-    color: var(--p-text-muted-color);
-    font-size: 0.875rem;
-    font-family: inherit;
-    padding: 0.5rem 0.875rem;
-    cursor: pointer;
-    border-radius: 0.5rem;
-    transition: background 0.15s, color 0.15s;
-
-    &.pg-segment-active {
-      background: var(--p-content-hover-background);
-      color: var(--p-text-color);
-    }
-  }
-}
-
-.pg-stage {
-  display: flex;
-  align-items: stretch;
-  height: calc(100svh - 13rem);
-  min-height: 560px;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  background: var(--p-surface-950, #09090b);
-}
-
+// ---- content beside the pinned sidebar (margin driven by contentStyle()) ------------------
 .pg-main {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-height: 100svh;
+  box-sizing: border-box;
   padding: 0.75rem 1rem 1rem;
+  transition: margin 0.2s linear;
 }
 
 .pg-main-header {
@@ -110,6 +70,41 @@
 
 .pg-block-fill {
   flex: 1;
+}
+
+// ---- settings modal form ------------------------------------------------------------------
+.pg-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  min-width: 20rem;
+  padding-top: 0.25rem;
+}
+
+.pg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  > label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--p-text-color);
+  }
+
+  p-select {
+    width: 100%;
+  }
+
+  ::ng-deep .p-select {
+    width: 100%;
+  }
+}
+
+.pg-field-switch {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 // projected into sb-sidebar's footer slot — keeps the playground's own style scoping
