@@ -8,7 +8,16 @@ const base = {
   nodes: [
     {
       title: 'Conventions Management', icon: 'pi pi-calendar', type: 'group', entityName: null, path: null,
-      children: [{title: 'Conventions', icon: 'pi pi-list', type: 'link', entityName: 'conventions', path: 'conventions', children: []}],
+      children: [
+        {title: 'Conventions', icon: 'pi pi-list', type: 'link', entityName: 'conventions', path: 'conventions', children: []},
+        {
+          title: 'Administration', icon: 'pi pi-cog', type: 'group', entityName: null, path: null,
+          children: [
+            {title: 'All Conventions', icon: 'pi pi-database', type: 'link', entityName: 'conventions', path: 'conventions', children: []},
+            {title: 'All Studios', icon: 'pi pi-warehouse', type: 'link', entityName: 'studios', path: 'studios', children: []},
+          ],
+        },
+      ],
     },
     {title: 'Studios', icon: 'pi pi-building', type: 'link', entityName: 'studios', path: 'studios', children: []},
   ],

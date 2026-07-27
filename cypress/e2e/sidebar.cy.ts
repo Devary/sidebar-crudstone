@@ -12,6 +12,18 @@ describe('sb-sidebar (main sidebar, backed by quar-crud-host)', () => {
     cy.get('[data-cy="sidebar-link-Studios"]').should('be.visible');
   });
 
+  it('renders the nested sub-group expanded by default, with its own sub-links, and collapses on click', () => {
+    cy.get('[data-cy="sidebar-group-Administration"]').should('be.visible').and('contain.text', 'Administration');
+    cy.get('[data-cy="sidebar-link-All Conventions"]').should('be.visible');
+    cy.get('[data-cy="sidebar-link-All Studios"]').should('be.visible');
+
+    cy.get('[data-cy="sidebar-group-Administration"]').click();
+    cy.get('[data-cy="sidebar-link-All Conventions"]').should('not.exist');
+
+    cy.get('[data-cy="sidebar-group-Administration"]').click();
+    cy.get('[data-cy="sidebar-link-All Studios"]').should('be.visible');
+  });
+
   it('renders each node\'s icon', () => {
     cy.get('[data-cy="sidebar-group-Conventions Management"] .pi-calendar').should('exist');
     cy.get('[data-cy="sidebar-link-Conventions"] .pi-list').should('exist');

@@ -138,4 +138,10 @@ export class SidebarComponent {
   protected linkHref(node: SidebarNode): string {
     return this.config.crudstoneUrl + (node.path ?? '');
   }
+
+  /** The fetched sidebar's own name, capitalized — shown as the header's brand title. */
+  protected brandTitle(): string {
+    const name = this.sidebarContext()?.name ?? this.name();
+    return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+  }
 }

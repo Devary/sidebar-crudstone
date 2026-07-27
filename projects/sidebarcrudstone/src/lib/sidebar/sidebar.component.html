@@ -15,6 +15,10 @@
 >
   <div class="sb-panel">
     <header class="sb-header">
+      <span class="sb-brand-mark">
+        <i class="pi pi-th-large"></i>
+      </span>
+      <span class="sb-brand-title sb-collapse-hidden">{{ brandTitle() }}</span>
       @if (sidebarContext()?.collapsible !== 'none') {
         <button type="button" class="sb-trigger" data-cy="sidebar-trigger" (click)="toggle()">
           <i class="pi pi-bars"></i>
@@ -53,7 +57,7 @@
                           <i [class]="child.icon"></i>
                         }
                         <span class="sb-menu-text">{{ child.title }}</span>
-                        <i class="pi sb-menu-chevron" [class.pi-chevron-down]="isSubMenuOpen(child)" [class.pi-chevron-right]="!isSubMenuOpen(child)"></i>
+                        <i class="pi pi-chevron-right sb-menu-chevron" [class.sb-chevron-open]="isSubMenuOpen(child)"></i>
                       </button>
                       @if (isSubMenuOpen(child)) {
                         <ul class="sb-menu-sub">
