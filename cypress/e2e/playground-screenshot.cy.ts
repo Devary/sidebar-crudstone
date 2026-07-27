@@ -55,6 +55,23 @@ describe('playground', () => {
     cy.get('[data-cy="sidebar-root"]').should('not.have.attr', 'data-overlay');
   });
 
+  it('switches theme and light mode from settings after confirmation', () => {
+    cy.get('[data-cy="sidebar-footer"]').click();
+    cy.get('[data-cy="sidebar-footer-settings"]').click();
+    cy.get('[data-cy="pg-theme"]').click();
+    cy.get('.p-select-overlay').contains('.p-select-option', 'Blue').click();
+    cy.get('[data-cy="pg-dark-mode"]').click();
+    cy.get('[data-cy="pg-settings-save"] button').click();
+    cy.contains('.p-confirmdialog button', 'Yes, apply').click();
+    cy.get('html').should('not.have.class', 'app-dark');
+    cy.get('sb-sidebar').should($el => {
+      expect(getComputedStyle($el[0]).getPropertyValue('--p-primary-color').trim()).to.eq('#3b82f6');
+    });
+    cy.get('.p-dialog').should('not.exist');
+    cy.get('.p-dialog-mask').should('not.exist');
+    cy.screenshot('playground-light-blue', {capture: 'viewport'});
+  });
+
   it('closes silently on Cancel when nothing changed', () => {
     cy.get('[data-cy="sidebar-footer"]').click();
     cy.get('[data-cy="sidebar-footer-settings"]').click();

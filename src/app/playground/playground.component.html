@@ -21,7 +21,6 @@
       <i class="pi pi-objects-column"></i>
     </button>
   </div>
-  <div class="pg-block pg-block-top"></div>
   <div class="pg-block pg-block-fill"></div>
 </div>
 
@@ -35,6 +34,31 @@
   data-cy="pg-settings-dialog"
 >
   <div class="pg-settings-form">
+    <div class="pg-field">
+      <label>Theme</label>
+      <p-select [options]="themeOptions" optionLabel="label" optionValue="value" [(ngModel)]="staged.theme" appendTo="body" data-cy="pg-theme">
+        <ng-template pTemplate="selectedItem" let-option>
+          <span class="pg-theme-option">
+            @if (option.color) {
+              <span class="pg-theme-dot" [style.background]="option.color"></span>
+            }
+            {{ option.label }}
+          </span>
+        </ng-template>
+        <ng-template pTemplate="item" let-option>
+          <span class="pg-theme-option">
+            @if (option.color) {
+              <span class="pg-theme-dot" [style.background]="option.color"></span>
+            }
+            {{ option.label }}
+          </span>
+        </ng-template>
+      </p-select>
+    </div>
+    <div class="pg-field pg-field-switch">
+      <label>Dark Mode</label>
+      <p-toggleswitch [(ngModel)]="staged.darkMode" data-cy="pg-dark-mode"/>
+    </div>
     <div class="pg-field">
       <label>Variant</label>
       <p-select [options]="variantOptions" optionLabel="label" optionValue="value" [(ngModel)]="staged.variant" appendTo="body" data-cy="pg-variant"/>

@@ -6,7 +6,7 @@ import {Dialog} from 'primeng/dialog';
 import {Button} from 'primeng/button';
 import {ConfirmDialog} from 'primeng/confirmdialog';
 import {ConfirmationService, PrimeTemplate} from 'primeng/api';
-import {SidebarCollapsible, SidebarComponent, SidebarContext, SidebarSide, SidebarVariant} from 'sidebarcrudstone';
+import {SidebarCollapsible, SidebarComponent, SidebarContext, SidebarSide, SidebarVariant, THEME_PALETTES} from 'sidebarcrudstone';
 
 interface SidebarSettings {
   variant: SidebarVariant;
@@ -15,6 +15,8 @@ interface SidebarSettings {
   overlay: boolean;
   openOnHover: boolean;
   backdrop: boolean;
+  theme: string;
+  darkMode: boolean;
 }
 
 const DEFAULT_SETTINGS: SidebarSettings = {
@@ -24,6 +26,8 @@ const DEFAULT_SETTINGS: SidebarSettings = {
   overlay: false,
   openOnHover: false,
   backdrop: false,
+  theme: 'violet',
+  darkMode: true,
 };
 
 /**
@@ -56,6 +60,12 @@ export class PlaygroundComponent {
     {label: 'Left', value: 'left' as SidebarSide},
     {label: 'Right', value: 'right' as SidebarSide},
   ];
+  /** Every palette the ecosystem's theme-palettes module defines, plus the host-default sentinel. */
+  protected readonly themeOptions = Object.entries(THEME_PALETTES).map(([value, palette]) => ({
+    label: palette.name,
+    value,
+    color: palette.shades?.[500] ?? null,
+  }));
 
   /** The applied settings — what the sidebar actually renders with. */
   protected readonly settings = signal<SidebarSettings>({...DEFAULT_SETTINGS});
@@ -71,7 +81,7 @@ export class PlaygroundComponent {
 
   protected readonly acmeContext = computed<Partial<SidebarContext>>(() => ({
     name: 'Acme Inc',
-    theme: 'violet',
+    theme: this.settings().theme,
     side: this.settings().side,
     variant: this.settings().variant,
     collapsible: this.settings().collapsible,
@@ -158,6 +168,7 @@ export class PlaygroundComponent {
       rejectLabel: 'Keep editing',
       accept: () => {
         this.settings.set({...this.staged});
+        document.documentElement.classList.toggle('app-dark', this.staged.darkMode);
         this.settingsOpen.set(false);
       },
     });
