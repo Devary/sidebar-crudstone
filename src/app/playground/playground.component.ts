@@ -138,6 +138,11 @@ export class PlaygroundComponent {
   });
 
   protected openSettings(): void {
+    // darkMode's source of truth is the live <html> class (the app-level toggle also flips it),
+    // so re-baseline the applied value before staging — otherwise a toggle made outside this
+    // modal would read as a dirty edit in here
+    const domDark = document.documentElement.classList.contains('app-dark');
+    this.settings.update(current => ({...current, darkMode: domDark}));
     this.staged = {...this.settings()};
     this.settingsOpen.set(true);
   }
@@ -161,6 +166,7 @@ export class PlaygroundComponent {
       accept: () => {
         this.settings.set({...this.staged});
         document.documentElement.classList.toggle('app-dark', this.staged.darkMode);
+        localStorage.setItem('darkMode', String(this.staged.darkMode));
         this.settingsOpen.set(false);
       },
     });
