@@ -1,55 +1,99 @@
-<!-- p-sidebar renders its actual panel content portaled elsewhere in the DOM, not as a child of
-     this element — its own styleClass (not a plain data-cy attribute, which would stay on this
-     zero-size host tag instead) is what reaches it, see .sb-sidebar-panel in the stylesheet -->
-<p-sidebar
-  [(visible)]="visible"
-  [modal]="false"
-  [dismissible]="false"
-  [showCloseIcon]="false"
-  styleClass="sb-sidebar-panel"
+<!-- Hand-written compound sidebar: the same data-attribute contract the PrimeNG 20+ compound
+     Sidebar exposes (data-state / data-side / data-variant / data-collapsible-mode), driven
+     entirely off the fetched SidebarContext — the stylesheet keys every variant off these. -->
+<div
+  class="sb-root"
+  data-cy="sidebar-root"
+  [attr.data-state]="state()"
+  [attr.data-side]="sidebarContext()?.side ?? 'left'"
+  [attr.data-variant]="sidebarContext()?.variant ?? 'sidebar'"
+  [attr.data-collapsible-mode]="sidebarContext()?.collapsible ?? 'icon'"
+  [attr.data-overlay]="sidebarContext()?.overlay ? '' : null"
+  [attr.data-hover-open]="hoverOpen() ? '' : null"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
 >
-  @if (loading()) {
-    <div class="sb-sidebar-loading" data-cy="sidebar-loading">
-      <i class="pi pi-spin pi-spinner"></i>
-      {{ i18n.t('loading') }}
-    </div>
-  } @else {
-    @if (sidebarContext(); as context) {
-      <nav class="sb-sidebar-tree">
-        @for (node of context.nodes; track node) {
-          <ng-container *ngTemplateOutlet="nodeTemplate; context: {$implicit: node, depth: 0}"/>
-        }
-      </nav>
-    }
-  }
-</p-sidebar>
-
-<ng-template #nodeTemplate let-node let-depth="depth">
-  @if (node.type === 'group') {
-    <div class="sb-sidebar-group" [style.paddingLeft.rem]="depth * 1">
-      <button
-        type="button"
-        class="sb-sidebar-group-toggle"
-        [attr.data-cy]="'sidebar-group-' + node.title"
-        (click)="toggleGroup(node)"
-      >
-        <i class="pi" [class.pi-chevron-down]="isExpanded(node)" [class.pi-chevron-right]="!isExpanded(node)"></i>
-        {{ node.title }}
-      </button>
-      @if (isExpanded(node)) {
-        @for (child of node.children; track child) {
-          <ng-container *ngTemplateOutlet="nodeTemplate; context: {$implicit: child, depth: depth + 1}"/>
+  <div class="sb-panel">
+    <header class="sb-header">
+      @if (sidebarContext()?.collapsible !== 'none') {
+        <button type="button" class="sb-trigger" data-cy="sidebar-trigger" (click)="toggle()">
+          <i class="pi pi-bars"></i>
+        </button>
+      }
+    </header>
+    <div class="sb-content">
+      @if (loading()) {
+        <div class="sb-loading" data-cy="sidebar-loading">
+          <i class="pi pi-spin pi-spinner"></i>
+          {{ i18n.t('loading') }}
+        </div>
+      } @else {
+        @if (sidebarContext(); as context) {
+          @for (node of context.nodes; track node) {
+            <div class="sb-group" [attr.data-cy]="'sidebar-group-' + node.title">
+              @if (node.type === 'group') {
+                <div class="sb-group-label">
+                  @if (node.icon) {
+                    <i [class]="node.icon"></i>
+                  }
+                  <span>{{ node.title }}</span>
+                </div>
+              }
+              <ul class="sb-menu">
+                @for (child of (node.type === 'group' ? node.children : [node]); track child) {
+                  <li class="sb-menu-item">
+                    @if (child.type === 'group') {
+                      <button
+                        type="button"
+                        class="sb-menu-button"
+                        [attr.data-cy]="'sidebar-group-' + child.title"
+                        (click)="toggleSubMenu(child)"
+                      >
+                        @if (child.icon) {
+                          <i [class]="child.icon"></i>
+                        }
+                        <span class="sb-menu-text">{{ child.title }}</span>
+                        <i class="pi sb-menu-chevron" [class.pi-chevron-down]="isSubMenuOpen(child)" [class.pi-chevron-right]="!isSubMenuOpen(child)"></i>
+                      </button>
+                      @if (isSubMenuOpen(child)) {
+                        <ul class="sb-menu-sub">
+                          @for (grandchild of child.children; track grandchild) {
+                            <li class="sb-menu-sub-item">
+                              <a class="sb-menu-sub-button" [href]="linkHref(grandchild)" [attr.data-cy]="'sidebar-link-' + grandchild.title">
+                                @if (grandchild.icon) {
+                                  <i [class]="grandchild.icon"></i>
+                                }
+                                <span class="sb-menu-text">{{ grandchild.title }}</span>
+                              </a>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    } @else {
+                      <a class="sb-menu-button" [href]="linkHref(child)" [attr.data-cy]="'sidebar-link-' + child.title">
+                        @if (child.icon) {
+                          <i [class]="child.icon"></i>
+                        }
+                        <span class="sb-menu-text">{{ child.title }}</span>
+                      </a>
+                    }
+                  </li>
+                }
+              </ul>
+            </div>
+          }
         }
       }
     </div>
-  } @else {
-    <a
-      class="sb-sidebar-link"
-      [style.paddingLeft.rem]="depth * 1 + 1"
-      [href]="linkHref(node)"
-      [attr.data-cy]="'sidebar-link-' + node.title"
-    >
-      {{ node.title }}
-    </a>
+  </div>
+  @if (sidebarContext()?.collapsible !== 'none') {
+    <!-- thin grab-strip on the panel's outer edge — click toggles, same as the compound API's rail -->
+    <button type="button" class="sb-rail" data-cy="sidebar-rail" (click)="toggle()" aria-label="Toggle sidebar"></button>
   }
-</ng-template>
+</div>
+@if (sidebarContext()?.overlay && state() === 'expanded') {
+  <!-- rendered only in overlay mode, and only while open — it would otherwise sit on top of the
+       page (and the sidebar's own trigger) blocking every click, same pitfall the compound API's
+       always-visible backdrop had -->
+  <div class="sb-backdrop" data-cy="sidebar-backdrop" (click)="onBackdropClick()"></div>
+}

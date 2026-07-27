@@ -1,62 +1,304 @@
-// the panel itself (p-sidebar's own overlay/drawer chrome) — widened a bit from PrimeNG's own
-// default so titles at deeper nesting levels have room before wrapping
-::ng-deep .sb-sidebar-panel {
-  width: 20rem;
+// Hand-written port of the compound Sidebar's look (PrimeNG 20+ "Variants" demo / shadcn-style):
+// every variant keys off the same data-side / data-variant / data-collapsible-mode / data-state
+// host attributes the compound API sets, using only PrimeNG design tokens that exist in the free
+// v19 Aura preset (--p-content-*, --p-text-*, --p-primary-color).
+
+:host {
+  display: block;
+  --sb-width: 16rem;
+  --sb-width-icon: 3rem;
 }
 
-.sb-sidebar-loading {
+.sb-root {
+  position: relative;
+  height: 100svh;
+  width: var(--sb-width);
+  flex-shrink: 0;
+  transition: width 0.2s linear;
+
+  // a right-side sidebar pins itself to the page's right edge (works in both block and flex
+  // hosts, since the root always has a definite width)
+  &[data-side='right'] {
+    margin-left: auto;
+  }
+
+  // ---- collapsed states -------------------------------------------------------------------
+  // hover-open (openOnHover while collapsed) keeps data-state="collapsed" but widens anyway,
+  // so every collapsed rule below excludes it
+  &[data-collapsible-mode='icon'][data-state='collapsed']:not([data-hover-open]) {
+    width: var(--sb-width-icon);
+
+    .sb-group-label {
+      justify-content: center;
+      padding: 0;
+
+      span {
+        display: none;
+      }
+    }
+
+    .sb-menu-button {
+      justify-content: center;
+      padding: 0;
+    }
+
+    .sb-menu-text,
+    .sb-menu-chevron,
+    .sb-menu-sub,
+    .sb-loading {
+      display: none;
+    }
+  }
+
+  &[data-collapsible-mode='offcanvas'][data-state='collapsed']:not([data-hover-open]) {
+    width: 0;
+
+    .sb-panel {
+      transform: translateX(-100%);
+    }
+
+    &[data-side='right'] .sb-panel {
+      transform: translateX(100%);
+    }
+  }
+
+  // ---- floating / inset variants ----------------------------------------------------------
+  &[data-variant='floating'],
+  &[data-variant='inset'] {
+    padding: 0.5rem;
+
+    .sb-panel {
+      border-radius: 0.75rem;
+    }
+  }
+
+  &[data-variant='floating'] .sb-panel {
+    border: 1px solid var(--p-content-border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &[data-variant='sidebar'] {
+    &[data-side='left'] .sb-panel {
+      border-right: 1px solid var(--p-content-border-color);
+    }
+
+    &[data-side='right'] .sb-panel {
+      border-left: 1px solid var(--p-content-border-color);
+    }
+  }
+
+  // ---- overlay mode: sits fixed over the page, backdrop behind it -------------------------
+  &[data-overlay] {
+    position: fixed;
+    top: 0;
+    z-index: 1101; // above the backdrop (1100), in PrimeNG's own overlay z-index neighborhood
+
+    &[data-side='left'] {
+      left: 0;
+    }
+
+    &[data-side='right'] {
+      right: 0;
+    }
+  }
+}
+
+.sb-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  transition: transform 0.2s linear;
+}
+
+.sb-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 3rem;
+  padding: 0.5rem;
+}
+
+.sb-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--p-text-color);
+  cursor: pointer;
+  border-radius: var(--p-content-border-radius);
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+}
+
+.sb-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.sb-loading {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: 0.5rem;
   color: var(--p-text-muted-color);
+  white-space: nowrap;
 }
 
-.sb-sidebar-tree {
+.sb-group {
   display: flex;
   flex-direction: column;
 }
 
-.sb-sidebar-group {
+.sb-group-label {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+
+  i {
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
 }
 
-// a plain <button>, styled directly — same convention search-crudstone's own action buttons use
-// (var(--p-primary-color) etc. applied straight to a native element) rather than wrapping every
-// control in a full PrimeNG component
-.sb-sidebar-group-toggle {
+.sb-menu,
+.sb-menu-sub {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sb-menu-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.65rem 1rem;
+  height: 2rem;
+  padding: 0 0.5rem;
   border: none;
+  border-radius: var(--p-content-border-radius);
   background: transparent;
   color: var(--p-text-color);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
+  font-size: 0.875rem;
+  font-family: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
   cursor: pointer;
+  transition: background 0.15s;
 
   &:hover {
     background: var(--p-content-hover-background);
   }
 
-  .pi {
-    font-size: 0.75rem;
+  i {
+    font-size: 1rem;
+    width: 1rem;
+    flex-shrink: 0;
     color: var(--p-text-muted-color);
   }
 }
 
-.sb-sidebar-link {
-  display: block;
-  padding: 0.65rem 1rem;
-  color: var(--p-text-color);
+.sb-menu-text {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-menu-chevron {
+  margin-left: auto;
+  font-size: 0.75rem !important;
+  width: auto !important;
+}
+
+.sb-menu-sub {
+  margin: 0.125rem 0 0 0.875rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--p-content-border-color);
+}
+
+.sb-menu-sub-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  border-radius: var(--p-content-border-radius);
+  color: var(--p-text-muted-color);
+  font-size: 0.8125rem;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 0.15s, color 0.15s;
 
   &:hover {
     background: var(--p-content-hover-background);
-    color: var(--p-primary-color);
+    color: var(--p-text-color);
   }
+
+  i {
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+}
+
+// thin grab-strip on the panel's outer edge, same affordance as the compound API's rail: an
+// invisible click target that shows a divider line on hover and toggles the sidebar
+.sb-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+
+  [data-side='left'] > & {
+    right: -0.5rem;
+  }
+
+  [data-side='right'] > & {
+    left: -0.5rem;
+  }
+
+  &:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1px);
+    width: 2px;
+    background: var(--p-content-border-color);
+  }
+}
+
+.sb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.4);
 }
