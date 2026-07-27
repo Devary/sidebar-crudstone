@@ -4,12 +4,12 @@ describe('playground', () => {
   beforeEach(() => {
     cy.viewport(1200, 900);
     cy.visit('/playground');
-    cy.get('[data-cy="sidebar-link-Home"]').should('be.visible');
+    cy.get('[data-cy="sidebar-link-Studios"]').should('be.visible');
   });
 
   it('renders the pinned sidebar with no on-page controls, and captures it', () => {
     cy.get('[data-cy="pg-variant"]').should('not.exist');
-    cy.get('[data-cy="sidebar-brand"]').should('contain.text', 'Acme Inc');
+    cy.get('[data-cy="sidebar-brand"]').should('contain.text', 'Main');
     cy.screenshot('playground-dark', {capture: 'viewport'});
   });
 
@@ -55,21 +55,26 @@ describe('playground', () => {
     cy.get('[data-cy="sidebar-root"]').should('not.have.attr', 'data-overlay');
   });
 
-  it('switches theme and light mode from settings after confirmation', () => {
+  it('boots light with the host-default primary, like dynamic-crud', () => {
+    cy.get('html').should('not.have.class', 'app-dark');
+    cy.get('[data-cy="sidebar-root"]').should('be.visible');
+  });
+
+  it('switches theme and dark mode from settings after confirmation', () => {
     cy.get('[data-cy="sidebar-footer"]').click();
     cy.get('[data-cy="sidebar-footer-settings"]').click();
     cy.get('[data-cy="pg-theme"]').click();
-    cy.get('.p-select-overlay').contains('.p-select-option', 'Blue').click();
+    cy.get('.p-select-overlay').contains('.p-select-option', 'Purple').click();
     cy.get('[data-cy="pg-dark-mode"]').click();
     cy.get('[data-cy="pg-settings-save"] button').click();
     cy.contains('.p-confirmdialog button', 'Yes, apply').click();
-    cy.get('html').should('not.have.class', 'app-dark');
+    cy.get('html').should('have.class', 'app-dark');
     cy.get('sb-sidebar').should($el => {
-      expect(getComputedStyle($el[0]).getPropertyValue('--p-primary-color').trim()).to.eq('#3b82f6');
+      expect(getComputedStyle($el[0]).getPropertyValue('--p-primary-color').trim()).to.eq('#a855f7');
     });
     cy.get('.p-dialog').should('not.exist');
     cy.get('.p-dialog-mask').should('not.exist');
-    cy.screenshot('playground-light-blue', {capture: 'viewport'});
+    cy.screenshot('playground-dark-blue', {capture: 'viewport'});
   });
 
   it('closes silently on Cancel when nothing changed', () => {

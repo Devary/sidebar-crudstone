@@ -6,7 +6,7 @@ import {Dialog} from 'primeng/dialog';
 import {Button} from 'primeng/button';
 import {ConfirmDialog} from 'primeng/confirmdialog';
 import {ConfirmationService, PrimeTemplate} from 'primeng/api';
-import {SidebarCollapsible, SidebarComponent, SidebarContext, SidebarSide, SidebarVariant, THEME_PALETTES} from 'sidebarcrudstone';
+import {SidebarCollapsible, SidebarComponent, SidebarContext, SidebarService, SidebarSide, SidebarVariant, THEME_PALETTES} from 'sidebarcrudstone';
 
 interface SidebarSettings {
   variant: SidebarVariant;
@@ -26,15 +26,19 @@ const DEFAULT_SETTINGS: SidebarSettings = {
   overlay: false,
   openOnHover: false,
   backdrop: false,
-  theme: 'violet',
-  darkMode: true,
+  // matches dynamic-crud's own boot defaults: light Aura, host-default (emerald) primary
+  theme: 'primary',
+  darkMode: false,
 };
 
 /**
- * Demo page: the Acme Inc sidebar pinned to the screen edge, its layout params living in a
- * Settings modal opened from the sidebar's own brand dropdown (sb-sidebar's `settingsMenu`
- * mode). Modal follows the ecosystem-wide CRUD-modal pattern: staged edits, confirm-before-save,
- * confirm-before-discard when dirty, no free close. Demo-app only, not part of the library.
+ * Demo page: the REAL "main" sidebar (quar-crud-host's MainSidebar class, same data /main shows)
+ * pinned to the screen edge, its layout params living in a Settings modal opened from the footer
+ * user dropdown (sb-sidebar's `settingsMenu` mode). The context is fetched once, the applied
+ * settings are seeded from what the backend served, and the merged context (backend nodes +
+ * client-side setting overrides) feeds sb-sidebar's `context` input. Modal follows the
+ * ecosystem-wide CRUD-modal pattern: staged edits, confirm-before-save, confirm-before-discard
+ * when dirty, no free close. Demo-app only, not part of the library.
  */
 @Component({
   selector: 'app-playground',
@@ -76,56 +80,44 @@ export class PlaygroundComponent {
   protected readonly settingsOpen = signal(false);
   protected readonly sidebarOpen = signal(true);
 
-  constructor(private confirmationService: ConfirmationService) {
+  /** The backend-served MainSidebar context — nodes and initial layout/theme come from here. */
+  private readonly fetched = signal<SidebarContext | null>(null);
+
+  constructor(private confirmationService: ConfirmationService, sidebarService: SidebarService) {
+    sidebarService.getSidebar('main').subscribe(context => {
+      this.fetched.set(context);
+      // the backend's own @Sidebar config is the starting point; settings override from there
+      this.settings.update(current => ({
+        ...current,
+        variant: context.variant,
+        collapsible: context.collapsible,
+        side: context.side,
+        overlay: context.overlay,
+        openOnHover: context.openOnHover,
+        backdrop: context.backdrop,
+        theme: context.theme,
+      }));
+    });
   }
 
-  protected readonly acmeContext = computed<Partial<SidebarContext>>(() => ({
-    name: 'Acme Inc',
-    theme: this.settings().theme,
-    side: this.settings().side,
-    variant: this.settings().variant,
-    collapsible: this.settings().collapsible,
-    overlay: this.settings().overlay,
-    openOnHover: this.settings().openOnHover,
-    dismissable: true,
-    backdrop: this.settings().backdrop,
-    nodes: [
-      {
-        title: 'Navigation', type: 'group', children: [
-          {title: 'Home', icon: 'pi pi-home', type: 'link', path: 'home', children: []},
-          {title: 'Inbox', icon: 'pi pi-inbox', type: 'link', path: 'inbox', badge: '12', children: []},
-          {title: 'Search', icon: 'pi pi-search', type: 'link', path: 'search', children: []},
-          {title: 'Notifications', icon: 'pi pi-bell', type: 'link', path: 'notifications', badge: '3', children: []},
-        ],
-      },
-      {
-        title: 'Projects', type: 'group', children: [
-          {
-            title: 'Analytics', icon: 'pi pi-chart-bar', type: 'group', children: [
-              {title: 'Overview', type: 'link', path: 'overview', children: []},
-              {title: 'Reports', type: 'link', path: 'reports', children: []},
-              {title: 'Real-time', type: 'link', path: 'real-time', children: []},
-            ],
-          },
-          {title: 'Team', icon: 'pi pi-users', type: 'link', path: 'team', children: []},
-          {title: 'Calendar', icon: 'pi pi-calendar', type: 'link', path: 'calendar', children: []},
-          {
-            title: 'Documents', icon: 'pi pi-folder', type: 'group', defaultOpen: false, children: [
-              {title: 'Contracts', type: 'link', path: 'contracts', children: []},
-              {title: 'Invoices', type: 'link', path: 'invoices', children: []},
-            ],
-          },
-        ],
-      },
-      {
-        title: 'Billing', type: 'group', children: [
-          {title: 'Payments', icon: 'pi pi-credit-card', type: 'link', path: 'payments', children: []},
-          {title: 'Orders', icon: 'pi pi-shopping-cart', type: 'link', path: 'orders', children: []},
-          {title: 'Subscriptions', icon: 'pi pi-star', type: 'link', path: 'subscriptions', children: []},
-        ],
-      },
-    ],
-  }));
+  /** Backend nodes/name + the applied client-side setting overrides. */
+  protected readonly mainContext = computed<Partial<SidebarContext> | null>(() => {
+    const fetched = this.fetched();
+    if (!fetched) {
+      return null;
+    }
+    const applied = this.settings();
+    return {
+      ...fetched,
+      side: applied.side,
+      variant: applied.variant,
+      collapsible: applied.collapsible,
+      overlay: applied.overlay,
+      openOnHover: applied.openOnHover,
+      backdrop: applied.backdrop,
+      theme: applied.theme,
+    };
+  });
 
   /**
    * The content area's offset for the pinned sidebar: full width when open, the icon rail when

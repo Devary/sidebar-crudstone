@@ -1,7 +1,7 @@
 <div class="pg-sidebar-pin" [class.pg-sidebar-pin-right]="settings().side === 'right'">
   <sb-sidebar
-    [context]="acmeContext()"
-    [activePaths]="['home', 'overview']"
+    [context]="mainContext()"
+    [activePaths]="['conventions']"
     [showTrigger]="false"
     [settingsMenu]="true"
     (settingsSelected)="openSettings()"
