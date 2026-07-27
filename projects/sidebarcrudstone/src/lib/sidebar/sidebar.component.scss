@@ -52,7 +52,7 @@
     }
 
     .sb-menu-button,
-    .sb-brand-button {
+    .sb-footer-button {
       justify-content: center;
       padding: 0;
     }
@@ -149,78 +149,6 @@
   padding: 0.75rem;
 }
 
-// brand-as-dropdown (settingsMenu mode): same visual row, but an interactive button with a
-// chevron and a small anchored menu panel below it
-.sb-brand-button {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  flex: 1;
-  min-width: 0;
-  height: 2.25rem;
-  padding: 0 0.25rem;
-  border: none;
-  border-radius: 0.5rem;
-  background: transparent;
-  color: inherit;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: var(--sb-row-hover);
-  }
-}
-
-.sb-brand-chevron {
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  color: var(--p-text-muted-color);
-  transition: transform 0.2s;
-
-  &.sb-chevron-up {
-    transform: rotate(180deg);
-  }
-}
-
-.sb-brand-menu {
-  position: absolute;
-  top: calc(100% - 0.25rem);
-  left: 0.75rem;
-  right: 0.75rem;
-  z-index: 20;
-  padding: 0.25rem;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.5rem;
-  background: var(--p-content-background);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
-.sb-brand-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  width: 100%;
-  height: 2rem;
-  padding: 0 0.625rem;
-  border: none;
-  border-radius: 0.375rem;
-  background: transparent;
-  color: var(--p-text-color);
-  font-size: 0.875rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  i {
-    font-size: 0.875rem;
-    color: var(--p-text-muted-color);
-  }
-
-  &:hover {
-    background: var(--sb-row-hover);
-  }
-}
 
 .sb-brand-mark {
   display: flex;
@@ -431,15 +359,96 @@
   }
 }
 
-// ---- footer: projected host content (user card etc.), pinned to the bottom ----------------
+// ---- footer: projected host content (user card etc.), pinned to the bottom; in settingsMenu
+// mode the whole row is a dropdown trigger whose menu opens UPWARD above it ------------------
 .sb-footer {
+  position: relative; // anchors the settings menu panel
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.5rem;
 
-  &:not(:has(*)) {
+  &:not(:has([sb-footer])) {
     display: none;
+  }
+}
+
+.sb-footer-button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.375rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--sb-row-hover);
+  }
+
+  &.sb-footer-static {
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.sb-footer-chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--p-text-muted-color);
+  transition: transform 0.2s;
+
+  &.sb-chevron-open {
+    transform: rotate(180deg);
+  }
+}
+
+.sb-settings-menu {
+  position: absolute;
+  bottom: calc(100% - 0.25rem);
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 20;
+  padding: 0.25rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.5rem;
+  background: var(--p-content-background);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.sb-settings-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--p-text-color);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  i {
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+  }
+
+  &:hover {
+    background: var(--sb-row-hover);
   }
 }
 

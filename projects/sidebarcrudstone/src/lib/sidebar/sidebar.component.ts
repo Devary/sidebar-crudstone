@@ -57,12 +57,13 @@ export class SidebarComponent {
   readonly showTrigger = input(true);
 
   /**
-   * Turn the brand (mark + name) into a dropdown whose menu holds a Settings entry — clicking it
-   * emits `settingsSelected` for the host to react to (e.g. open its own settings dialog).
+   * Turn the footer row (the projected [sb-footer] content, e.g. a user card) into a dropdown
+   * whose menu holds a Settings entry — clicking it emits `settingsSelected` for the host to
+   * react to (e.g. open its own settings dialog).
    */
   readonly settingsMenu = input(false);
 
-  /** Fired when the brand dropdown's Settings entry is clicked. */
+  /** Fired when the footer dropdown's Settings entry is clicked. */
   readonly settingsSelected = output<void>();
 
   /** Two-way bindable open/closed (expanded/icon-only, or shown/hidden in offcanvas) state. */
@@ -85,7 +86,7 @@ export class SidebarComponent {
   // nested groups start expanded unless the node opts out via defaultOpen: false
   private readonly openSubMenus = signal<ReadonlySet<SidebarNode>>(new Set());
 
-  protected readonly brandMenuOpen = signal(false);
+  protected readonly settingsMenuOpen = signal(false);
 
   constructor(private sidebarService: SidebarService,
               private messageService: MessageService,
@@ -188,25 +189,25 @@ export class SidebarComponent {
     return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
   }
 
-  protected toggleBrandMenu(): void {
-    // collapsed icon-rail: the anchored menu would be clipped by the panel, so the brand click
+  protected toggleSettingsMenu(): void {
+    // collapsed icon-rail: the anchored menu would be clipped by the panel, so the footer click
     // expands the sidebar first — the user clicks again for the menu, now with room to render
     if (this.state() === 'collapsed') {
       this.open.set(true);
       return;
     }
-    this.brandMenuOpen.update(open => !open);
+    this.settingsMenuOpen.update(open => !open);
   }
 
   protected onSettingsClick(): void {
-    this.brandMenuOpen.set(false);
+    this.settingsMenuOpen.set(false);
     this.settingsSelected.emit();
   }
 
-  /** Any click outside this component closes the brand dropdown (standard menu semantics). */
+  /** Any click outside this component closes the footer dropdown (standard menu semantics). */
   protected onDocumentClick(event: MouseEvent): void {
-    if (this.brandMenuOpen() && !this.elementRef.nativeElement.contains(event.target as Node)) {
-      this.brandMenuOpen.set(false);
+    if (this.settingsMenuOpen() && !this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.settingsMenuOpen.set(false);
     }
   }
 }

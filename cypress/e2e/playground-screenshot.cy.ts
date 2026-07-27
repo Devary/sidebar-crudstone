@@ -1,4 +1,4 @@
-// playground smoke tests + screenshots: pinned sidebar, brand dropdown -> Settings modal
+// playground smoke tests + screenshots: pinned sidebar, footer (user) dropdown -> Settings modal
 // (staged edits, confirm-before-save, confirm-before-discard), no on-page controls
 describe('playground', () => {
   beforeEach(() => {
@@ -19,9 +19,9 @@ describe('playground', () => {
     cy.screenshot('playground-collapsed', {capture: 'viewport'});
   });
 
-  it('opens the Settings modal from the brand dropdown, over a blurred backdrop', () => {
-    cy.get('[data-cy="sidebar-brand"]').click();
-    cy.get('[data-cy="sidebar-brand-settings"]').should('be.visible').click();
+  it('opens the Settings modal from the footer dropdown, over a blurred backdrop', () => {
+    cy.get('[data-cy="sidebar-footer"]').click();
+    cy.get('[data-cy="sidebar-footer-settings"]').should('be.visible').click();
     cy.get('.p-dialog').should('be.visible').and('contain.text', 'Settings');
     cy.get('[data-cy="pg-variant"]').should('be.visible');
     cy.get('.p-dialog-mask').should($mask => {
@@ -31,8 +31,8 @@ describe('playground', () => {
   });
 
   it('applies staged settings only after the Save confirmation', () => {
-    cy.get('[data-cy="sidebar-brand"]').click();
-    cy.get('[data-cy="sidebar-brand-settings"]').click();
+    cy.get('[data-cy="sidebar-footer"]').click();
+    cy.get('[data-cy="sidebar-footer-settings"]').click();
     cy.get('[data-cy="pg-variant"]').click();
     cy.get('.p-select-overlay').contains('.p-select-option', 'Floating').click();
     // staged, not applied yet
@@ -45,8 +45,8 @@ describe('playground', () => {
   });
 
   it('asks before discarding dirty changes on Cancel, and keeps the applied settings', () => {
-    cy.get('[data-cy="sidebar-brand"]').click();
-    cy.get('[data-cy="sidebar-brand-settings"]').click();
+    cy.get('[data-cy="sidebar-footer"]').click();
+    cy.get('[data-cy="sidebar-footer-settings"]').click();
     cy.get('[data-cy="pg-overlay"]').click();
     cy.get('[data-cy="pg-settings-cancel"] button').click();
     cy.contains('.p-confirmdialog', 'Discard them?').should('be.visible');
@@ -56,8 +56,8 @@ describe('playground', () => {
   });
 
   it('closes silently on Cancel when nothing changed', () => {
-    cy.get('[data-cy="sidebar-brand"]').click();
-    cy.get('[data-cy="sidebar-brand-settings"]').click();
+    cy.get('[data-cy="sidebar-footer"]').click();
+    cy.get('[data-cy="sidebar-footer-settings"]').click();
     cy.get('[data-cy="pg-settings-cancel"] button').click();
     cy.get('.p-confirmdialog').should('not.exist');
     cy.get('.p-dialog').should('not.exist');
