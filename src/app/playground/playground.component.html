@@ -1,0 +1,69 @@
+<p class="pg-caption">Interactive playground for every sidebar variant, collapsible mode, side, overlay, open-on-hover and backdrop.</p>
+
+<div class="pg-controls">
+  <div class="pg-field">
+    <label>Variant</label>
+    <p-select
+      [options]="variantOptions"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="variant"
+      (ngModelChange)="setVariant($event)"
+      data-cy="pg-variant"
+    />
+  </div>
+
+  <div class="pg-field">
+    <label>Collapsible</label>
+    <p-select
+      [options]="collapsibleOptions"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="collapsible"
+      (ngModelChange)="setCollapsible($event)"
+      data-cy="pg-collapsible"
+    />
+  </div>
+
+  <div class="pg-field">
+    <label>Side</label>
+    <div class="pg-segment">
+      <button type="button" [class.pg-segment-active]="side() === 'left'" (click)="setSide('left')" data-cy="pg-side-left">Left</button>
+      <button type="button" [class.pg-segment-active]="side() === 'right'" (click)="setSide('right')" data-cy="pg-side-right">Right</button>
+    </div>
+  </div>
+
+  <div class="pg-field">
+    <label>Overlay</label>
+    <p-toggleswitch [(ngModel)]="overlay" (ngModelChange)="setOverlay($event)" data-cy="pg-overlay"/>
+  </div>
+
+  <div class="pg-field">
+    <label>Open on Hover</label>
+    <p-toggleswitch [(ngModel)]="openOnHover" (ngModelChange)="setOpenOnHover($event)" data-cy="pg-open-on-hover"/>
+  </div>
+
+  <div class="pg-field">
+    <label>Backdrop</label>
+    <p-toggleswitch [(ngModel)]="backdrop" (ngModelChange)="setBackdrop($event)" data-cy="pg-backdrop"/>
+  </div>
+</div>
+
+<div class="pg-stage">
+  <sb-sidebar [context]="acmeContext()" [activePaths]="['home', 'overview']" [showTrigger]="false" [(open)]="sidebarOpen" style="--sb-height: 100%">
+    <div sb-footer class="pg-user">
+      <span class="pg-user-avatar">JD</span>
+      <span class="pg-user-name sb-collapse-hidden">John Doe</span>
+    </div>
+  </sb-sidebar>
+
+  <div class="pg-main">
+    <div class="pg-main-header">
+      <button type="button" class="pg-toggle" (click)="toggleSidebar()" data-cy="pg-toggle" aria-label="Toggle sidebar">
+        <i class="pi pi-objects-column"></i>
+      </button>
+    </div>
+    <div class="pg-block pg-block-top"></div>
+    <div class="pg-block pg-block-fill"></div>
+  </div>
+</div>

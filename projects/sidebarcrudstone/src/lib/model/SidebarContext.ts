@@ -21,6 +21,10 @@ export interface SidebarContext {
   overlay: boolean;
   openOnHover: boolean;
   dismissable: boolean;
+  // whether an open overlay sidebar dims the page behind it. Frontend-side extension (context-gen
+  // doesn't serve it): defaults to the `overlay` value itself, so backend-fed sidebars keep the
+  // original "overlay implies backdrop" behavior.
+  backdrop: boolean;
   nodes: SidebarNode[];
 }
 
@@ -35,6 +39,7 @@ export function normalizeSidebarContext(raw: Partial<SidebarContext>): SidebarCo
     overlay: raw.overlay ?? false,
     openOnHover: raw.openOnHover ?? false,
     dismissable: raw.dismissable ?? true,
+    backdrop: raw.backdrop ?? raw.overlay ?? false,
     nodes: (raw.nodes ?? []).map(normalizeSidebarNode),
   };
 }

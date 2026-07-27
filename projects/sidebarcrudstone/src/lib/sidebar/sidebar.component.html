@@ -1,6 +1,6 @@
 <!-- Hand-written compound sidebar: the same data-attribute contract the PrimeNG 20+ compound
      Sidebar exposes (data-state / data-side / data-variant / data-collapsible-mode), driven
-     entirely off the fetched SidebarContext — the stylesheet keys every variant off these. -->
+     entirely off the applied SidebarContext — the stylesheet keys every variant off these. -->
 <div
   class="sb-root"
   data-cy="sidebar-root"
@@ -15,11 +15,9 @@
 >
   <div class="sb-panel">
     <header class="sb-header">
-      <span class="sb-brand-mark">
-        <i class="pi pi-th-large"></i>
-      </span>
+      <span class="sb-brand-mark">{{ brandTitle().charAt(0) }}</span>
       <span class="sb-brand-title sb-collapse-hidden">{{ brandTitle() }}</span>
-      @if (sidebarContext()?.collapsible !== 'none') {
+      @if (showTrigger() && sidebarContext()?.collapsible !== 'none') {
         <button type="button" class="sb-trigger" data-cy="sidebar-trigger" (click)="toggle()">
           <i class="pi pi-bars"></i>
         </button>
@@ -63,22 +61,38 @@
                         <ul class="sb-menu-sub">
                           @for (grandchild of child.children; track grandchild) {
                             <li class="sb-menu-sub-item">
-                              <a class="sb-menu-sub-button" [href]="linkHref(grandchild)" [attr.data-cy]="'sidebar-link-' + grandchild.title">
+                              <a
+                                class="sb-menu-sub-button"
+                                [class.sb-active]="isActive(grandchild)"
+                                [href]="linkHref(grandchild)"
+                                [attr.data-cy]="'sidebar-link-' + grandchild.title"
+                              >
                                 @if (grandchild.icon) {
                                   <i [class]="grandchild.icon"></i>
                                 }
                                 <span class="sb-menu-text">{{ grandchild.title }}</span>
+                                @if (grandchild.badge) {
+                                  <span class="sb-menu-badge">{{ grandchild.badge }}</span>
+                                }
                               </a>
                             </li>
                           }
                         </ul>
                       }
                     } @else {
-                      <a class="sb-menu-button" [href]="linkHref(child)" [attr.data-cy]="'sidebar-link-' + child.title">
+                      <a
+                        class="sb-menu-button"
+                        [class.sb-active]="isActive(child)"
+                        [href]="linkHref(child)"
+                        [attr.data-cy]="'sidebar-link-' + child.title"
+                      >
                         @if (child.icon) {
                           <i [class]="child.icon"></i>
                         }
                         <span class="sb-menu-text">{{ child.title }}</span>
+                        @if (child.badge) {
+                          <span class="sb-menu-badge">{{ child.badge }}</span>
+                        }
                       </a>
                     }
                   </li>
@@ -89,15 +103,18 @@
         }
       }
     </div>
+    <div class="sb-footer">
+      <ng-content select="[sb-footer]"/>
+    </div>
   </div>
   @if (sidebarContext()?.collapsible !== 'none') {
     <!-- thin grab-strip on the panel's outer edge — click toggles, same as the compound API's rail -->
     <button type="button" class="sb-rail" data-cy="sidebar-rail" (click)="toggle()" aria-label="Toggle sidebar"></button>
   }
 </div>
-@if (sidebarContext()?.overlay && state() === 'expanded') {
-  <!-- rendered only in overlay mode, and only while open — it would otherwise sit on top of the
-       page (and the sidebar's own trigger) blocking every click, same pitfall the compound API's
-       always-visible backdrop had -->
+@if (sidebarContext()?.overlay && sidebarContext()?.backdrop && state() === 'expanded') {
+  <!-- rendered only when backdrop is wanted (defaults to overlay mode), and only while open — it
+       would otherwise sit on top of the page (and the sidebar's own trigger) blocking every
+       click, same pitfall the compound API's always-visible backdrop had -->
   <div class="sb-backdrop" data-cy="sidebar-backdrop" (click)="onBackdropClick()"></div>
 }

@@ -1,6 +1,6 @@
 import {Component, computed, effect, Inject, input, model, signal} from '@angular/core';
 import {MessageService} from 'primeng/api';
-import {SidebarContext} from '../model/SidebarContext';
+import {normalizeSidebarContext, SidebarContext} from '../model/SidebarContext';
 import {SidebarNode} from '../model/SidebarNode';
 import {SIDEBAR_CRUDSTONE_CONFIG, SidebarCrudstoneConfig} from '../sidebar-crudstone-config';
 import {SidebarService} from '../service/sidebar.service';
@@ -21,6 +21,12 @@ import {themeVars} from '../theme/theme-palettes';
  * A link node is a plain `<a>` to `crudstoneUrl + that entity's own resolved path` (this library
  * never renders a CRUD table itself, only links out to one hosted elsewhere — see
  * `SidebarCrudstoneConfig.crudstoneUrl`).
+ *
+ * Instead of fetching by `name`, a host can hand a full context object to the `context` input
+ * (previews, playgrounds, tests) — frontend-only extensions like `badge`/`defaultOpen`/`backdrop`
+ * are only reachable this way until context-gen serves them. Optional `[sb-footer]` content
+ * projects into a pinned footer row (user card etc.), and `activePaths` marks link rows as the
+ * current location.
  */
 @Component({
   selector: 'sb-sidebar',
@@ -37,8 +43,17 @@ import {themeVars} from '../theme/theme-palettes';
 })
 export class SidebarComponent {
 
-  /** Which `@Sidebar(name = ...)` to fetch and render. */
-  readonly name = input.required<string>();
+  /** Which `@Sidebar(name = ...)` to fetch and render. Ignored when `context` is provided. */
+  readonly name = input<string>();
+
+  /** A locally-supplied context — skips fetching entirely (previews/playgrounds/tests). */
+  readonly context = input<Partial<SidebarContext> | null>(null);
+
+  /** Link-node `path`s to render as the currently-active location. */
+  readonly activePaths = input<string[]>([]);
+
+  /** Hide the header's own collapse trigger when the host renders its own toggle elsewhere. */
+  readonly showTrigger = input(true);
 
   /** Two-way bindable open/closed (expanded/icon-only, or shown/hidden in offcanvas) state. */
   readonly open = model(true);
@@ -56,8 +71,8 @@ export class SidebarComponent {
     this.sidebarContext()?.collapsible === 'none' || this.open() ? 'expanded' : 'collapsed');
 
   // which nested (level-2) group nodes are currently expanded, keyed by object identity (stable
-  // for the lifetime of one fetched SidebarContext, since its nodes are never rebuilt in place) —
-  // every nested group starts expanded, so the whole tree is visible/discoverable on first render
+  // for the lifetime of one applied SidebarContext, since its nodes are never rebuilt in place) —
+  // nested groups start expanded unless the node opts out via defaultOpen: false
   private readonly openSubMenus = signal<ReadonlySet<SidebarNode>>(new Set());
 
   constructor(private sidebarService: SidebarService,
@@ -66,10 +81,17 @@ export class SidebarComponent {
               protected i18n: TranslationService,
               @Inject(SIDEBAR_CRUDSTONE_CONFIG) private config: SidebarCrudstoneConfig) {
     effect(() => {
+      const provided = this.context();
+      if (provided) {
+        this.applyContext(normalizeSidebarContext(provided));
+        return;
+      }
       const name = this.name();
       this.sidebarContext.set(null);
       this.openSubMenus.set(new Set());
-      this.loadSidebar(name);
+      if (name) {
+        this.loadSidebar(name);
+      }
     });
   }
 
@@ -78,14 +100,18 @@ export class SidebarComponent {
     this.sidebarService.getSidebar(name).subscribe({
       next: context => {
         this.loading.set(false);
-        this.sidebarContext.set(context);
-        this.openSubMenus.set(new Set(this.nestedGroupNodes(context.nodes)));
+        this.applyContext(context);
       },
       error: () => {
         this.loading.set(false);
         this.messageService.add(this.messageTemplate.simpleError(this.i18n.t('sidebarNotFound', {name})));
       },
     });
+  }
+
+  private applyContext(context: SidebarContext): void {
+    this.sidebarContext.set(context);
+    this.openSubMenus.set(new Set(this.nestedGroupNodes(context.nodes).filter(node => node.defaultOpen !== false)));
   }
 
   // only a top-level group's own children can themselves be a group (@Sidebar's tree is
@@ -139,9 +165,13 @@ export class SidebarComponent {
     return this.config.crudstoneUrl + (node.path ?? '');
   }
 
-  /** The fetched sidebar's own name, capitalized — shown as the header's brand title. */
+  protected isActive(node: SidebarNode): boolean {
+    return node.type === 'link' && !!node.path && this.activePaths().includes(node.path);
+  }
+
+  /** The applied sidebar's own name, capitalized — shown as the header's brand title. */
   protected brandTitle(): string {
-    const name = this.sidebarContext()?.name ?? this.name();
+    const name = this.sidebarContext()?.name ?? this.name() ?? '';
     return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
   }
 }

@@ -2,3 +2,12 @@
 @use './assets/layout/layout.scss';
 @use 'primeicons/primeicons.css';
 @use './assets/demo/demo.scss';
+
+body {
+  margin: 0;
+}
+
+html.app-dark body {
+  background: var(--p-surface-950, #09090b);
+  color: var(--p-text-color);
+}
