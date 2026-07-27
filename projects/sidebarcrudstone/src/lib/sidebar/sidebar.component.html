@@ -1,55 +1,94 @@
-<!-- p-sidebar renders its actual panel content portaled elsewhere in the DOM, not as a child of
-     this element — its own styleClass (not a plain data-cy attribute, which would stay on this
-     zero-size host tag instead) is what reaches it, see .sb-sidebar-panel in the stylesheet -->
-<p-sidebar
-  [(visible)]="visible"
-  [modal]="false"
-  [dismissible]="false"
-  [showCloseIcon]="false"
-  styleClass="sb-sidebar-panel"
->
-  @if (loading()) {
-    <div class="sb-sidebar-loading" data-cy="sidebar-loading">
-      <i class="pi pi-spin pi-spinner"></i>
-      {{ i18n.t('loading') }}
-    </div>
-  } @else {
-    @if (sidebarContext(); as context) {
-      <nav class="sb-sidebar-tree">
-        @for (node of context.nodes; track node) {
-          <ng-container *ngTemplateOutlet="nodeTemplate; context: {$implicit: node, depth: 0}"/>
-        }
-      </nav>
+<p-sidebar-layout>
+  <p-sidebar
+    [id]="'sb-sidebar-' + name()"
+    [(open)]="open"
+    [side]="sidebarContext()?.side ?? 'left'"
+    [variant]="sidebarContext()?.variant ?? 'sidebar'"
+    [collapsible]="sidebarContext()?.collapsible ?? 'icon'"
+    [overlay]="sidebarContext()?.overlay ?? false"
+    [dismissable]="sidebarContext()?.dismissable ?? true"
+    [openOnHover]="sidebarContext()?.openOnHover ?? false"
+    data-cy="sidebar-root"
+  >
+    <p-sidebar-spacer/>
+    <p-sidebar-aside>
+      <p-sidebar-panel>
+        <p-sidebar-header>
+          <button type="button" pSidebarTrigger class="sb-sidebar-trigger" data-cy="sidebar-trigger">
+            <i class="pi pi-bars"></i>
+          </button>
+        </p-sidebar-header>
+        <p-sidebar-content>
+          @if (loading()) {
+            <div class="sb-sidebar-loading" data-cy="sidebar-loading">
+              <i class="pi pi-spin pi-spinner"></i>
+              {{ i18n.t('loading') }}
+            </div>
+          } @else {
+            @if (sidebarContext(); as context) {
+              @for (node of context.nodes; track node) {
+                <p-sidebar-group [attr.data-cy]="'sidebar-group-' + node.title">
+                  @if (node.type === 'group') {
+                    <p-sidebar-group-label>
+                      @if (node.icon) {
+                        <i [class]="node.icon"></i>
+                      }
+                      {{ node.title }}
+                    </p-sidebar-group-label>
+                  }
+                  <p-sidebar-group-content>
+                    <p-sidebar-menu>
+                      @for (child of (node.type === 'group' ? node.children : [node]); track child) {
+                        <p-sidebar-menu-item
+                          [collapsible]="child.type === 'group'"
+                          [open]="isSubMenuOpen(child)"
+                          (openChange)="setSubMenuOpen(child, $event)"
+                        >
+                          @if (child.type === 'group') {
+                            <button type="button" pSidebarMenuButton [attr.data-cy]="'sidebar-group-' + child.title">
+                              @if (child.icon) {
+                                <i [class]="child.icon"></i>
+                              }
+                              <span>{{ child.title }}</span>
+                            </button>
+                            <p-sidebar-menu-sub>
+                              @for (grandchild of child.children; track grandchild) {
+                                <p-sidebar-menu-sub-item>
+                                  <a pSidebarMenuSubButton [href]="linkHref(grandchild)" [attr.data-cy]="'sidebar-link-' + grandchild.title">
+                                    @if (grandchild.icon) {
+                                      <i [class]="grandchild.icon"></i>
+                                    }
+                                    <span>{{ grandchild.title }}</span>
+                                  </a>
+                                </p-sidebar-menu-sub-item>
+                              }
+                            </p-sidebar-menu-sub>
+                          } @else {
+                            <a pSidebarMenuButton [href]="linkHref(child)" [attr.data-cy]="'sidebar-link-' + child.title">
+                              @if (child.icon) {
+                                <i [class]="child.icon"></i>
+                              }
+                              <span>{{ child.title }}</span>
+                            </a>
+                          }
+                        </p-sidebar-menu-item>
+                      }
+                    </p-sidebar-menu>
+                  </p-sidebar-group-content>
+                </p-sidebar-group>
+              }
+            }
+          }
+        </p-sidebar-content>
+      </p-sidebar-panel>
+      <button type="button" pSidebarRail data-cy="sidebar-rail"></button>
+    </p-sidebar-aside>
+    @if (sidebarContext()?.overlay) {
+      <!-- SidebarBackdrop's own visibility tracks pcSidebar.open() unconditionally, not gated by
+           overlay itself — rendering it at all is the consumer's own signal that overlay mode is
+           in use, so it's kept out of the DOM entirely otherwise (it would sit on top of
+           everything else, at open()===true's default, even in plain "sidebar" mode). -->
+      <p-sidebar-backdrop/>
     }
-  }
-</p-sidebar>
-
-<ng-template #nodeTemplate let-node let-depth="depth">
-  @if (node.type === 'group') {
-    <div class="sb-sidebar-group" [style.paddingLeft.rem]="depth * 1">
-      <button
-        type="button"
-        class="sb-sidebar-group-toggle"
-        [attr.data-cy]="'sidebar-group-' + node.title"
-        (click)="toggleGroup(node)"
-      >
-        <i class="pi" [class.pi-chevron-down]="isExpanded(node)" [class.pi-chevron-right]="!isExpanded(node)"></i>
-        {{ node.title }}
-      </button>
-      @if (isExpanded(node)) {
-        @for (child of node.children; track child) {
-          <ng-container *ngTemplateOutlet="nodeTemplate; context: {$implicit: child, depth: depth + 1}"/>
-        }
-      }
-    </div>
-  } @else {
-    <a
-      class="sb-sidebar-link"
-      [style.paddingLeft.rem]="depth * 1 + 1"
-      [href]="linkHref(node)"
-      [attr.data-cy]="'sidebar-link-' + node.title"
-    >
-      {{ node.title }}
-    </a>
-  }
-</ng-template>
+  </p-sidebar>
+</p-sidebar-layout>

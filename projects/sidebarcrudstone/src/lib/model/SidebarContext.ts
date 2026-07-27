@@ -1,5 +1,9 @@
 import {normalizeSidebarNode, SidebarNode} from './SidebarNode';
 
+export type SidebarSide = 'left' | 'right';
+export type SidebarVariant = 'sidebar' | 'floating' | 'inset';
+export type SidebarCollapsible = 'offcanvas' | 'icon' | 'none';
+
 // Mirrors context-gen's org.devary.table.sidebar.SidebarContext, served at
 // GET {sidebarUrl}{name} — the whole resolved nav tree for one named @Sidebar class.
 export interface SidebarContext {
@@ -7,6 +11,15 @@ export interface SidebarContext {
   // this sidebar's own accent color (@Sidebar#theme()) — "primary" means no override, see
   // theme-palettes.ts
   theme: string;
+  // layout config (@Sidebar#side()/variant()/collapsible()/overlay()/openOnHover()/
+  // dismissable()) — fixed server-side, bound directly onto p-sidebar's own inputs of the same
+  // names with no translation step and no client-facing toggle.
+  side: SidebarSide;
+  variant: SidebarVariant;
+  collapsible: SidebarCollapsible;
+  overlay: boolean;
+  openOnHover: boolean;
+  dismissable: boolean;
   nodes: SidebarNode[];
 }
 
@@ -15,6 +28,12 @@ export function normalizeSidebarContext(raw: Partial<SidebarContext>): SidebarCo
   return {
     name: raw.name ?? '',
     theme: raw.theme ?? 'primary',
+    side: raw.side === 'right' ? 'right' : 'left',
+    variant: raw.variant === 'floating' || raw.variant === 'inset' ? raw.variant : 'sidebar',
+    collapsible: raw.collapsible === 'offcanvas' || raw.collapsible === 'none' ? raw.collapsible : 'icon',
+    overlay: raw.overlay ?? false,
+    openOnHover: raw.openOnHover ?? false,
+    dismissable: raw.dismissable ?? true,
     nodes: (raw.nodes ?? []).map(normalizeSidebarNode),
   };
 }
